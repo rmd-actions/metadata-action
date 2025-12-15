@@ -77,7 +77,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         name: Docker meta
         id: meta
@@ -131,7 +131,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       -
         name: Docker meta
         id: meta
@@ -314,6 +314,7 @@ The following outputs are available:
 |-------------------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `version`               | String | Docker image version                                                                                                                                            |
 | `tags`                  | String | Docker tags                                                                                                                                                     |
+| `tag-names`             | String | Docker tag names without image base name                                                                                                                        |
 | `labels`                | String | Docker labels                                                                                                                                                   |
 | `annotations`           | String | [Annotations](https://github.com/moby/buildkit/blob/master/docs/annotations.md)                                                                                 |
 | `json`                  | String | JSON output of tags and labels                                                                                                                                  |
