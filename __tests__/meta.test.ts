@@ -2770,7 +2770,6 @@ describe('pr', () => {
 
 describe('pr-head-sha', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
   test.each([
     [
       'pr01',
@@ -3911,7 +3910,6 @@ describe('raw', () => {
 
 describe('json', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
   test.each([
     [
       'json01',
@@ -4275,7 +4273,6 @@ describe('json', () => {
 
 describe('bakeFile', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
   test.each([
     [
       'bakeFile01',
@@ -4797,7 +4794,6 @@ describe('bakeFile', () => {
 
 describe('bakeFileTagsLabels', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
   test.each([
     [
       'bakeFileTagsLabels01',
@@ -4855,7 +4851,6 @@ describe('bakeFileTagsLabels', () => {
 
 describe('sepTags', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
   test.each([
     [
       'sepTags01',
@@ -4888,13 +4883,10 @@ describe('sepTags', () => {
       "user/app:dev,user/app:my,user/app:custom,user/app:tags"
     ]
   ])('given %p with %p event', async (name: string, envFile: string, inputs: Inputs, expTags: string) => {
-
     process.env = dotenv.parse(fs.readFileSync(path.join(__dirname, 'fixtures', envFile)));
 
     const toolkit = new Toolkit();
-
     const repo = await toolkit.github.repoData();
-
     const meta = new Meta({...getInputs(), ...inputs}, await getContext(ContextSource.workflow, toolkit), repo);
 
     expect(meta.getTags().join(inputs.sepTags)).toEqual(expTags);

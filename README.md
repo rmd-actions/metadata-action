@@ -77,7 +77,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       -
         name: Docker meta
         id: meta
@@ -131,7 +131,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       -
         name: Docker meta
         id: meta

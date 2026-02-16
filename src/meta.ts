@@ -376,7 +376,7 @@ export class Meta {
       if (hp.body.length == 1 && hp.body[0].type == 'MustacheStatement') {
         return hp.body[0]['path']['parts'].length == 1 && hp.body[0]['path']['parts'][0] == 'raw';
       }
-    } catch (err) {
+    } catch {
       return false;
     }
     return false;
