@@ -1,9 +1,11 @@
 import * as core from '@actions/core';
-import {Context as GithubContext} from '@actions/github/lib/context';
-import {Util} from '@docker/actions-toolkit/lib/util';
-import {Git} from '@docker/actions-toolkit/lib/git';
-import {GitHub} from '@docker/actions-toolkit/lib/github';
-import {Toolkit} from '@docker/actions-toolkit/lib/toolkit';
+
+import {Util} from '@docker/actions-toolkit/lib/util.js';
+import {Git} from '@docker/actions-toolkit/lib/git.js';
+import {GitHub} from '@docker/actions-toolkit/lib/github/github.js';
+import {Toolkit} from '@docker/actions-toolkit/lib/toolkit.js';
+
+type GithubContext = typeof GitHub.context;
 
 export interface Context extends GithubContext {
   commitDate: Date;
@@ -26,11 +28,11 @@ export interface Inputs {
 export function getInputs(): Inputs {
   return {
     context: (core.getInput('context') || ContextSource.workflow) as ContextSource,
-    images: Util.getInputList('images', {ignoreComma: true, comment: '#'}),
-    tags: Util.getInputList('tags', {ignoreComma: true, comment: '#'}),
-    flavor: Util.getInputList('flavor', {ignoreComma: true, comment: '#'}),
-    labels: Util.getInputList('labels', {ignoreComma: true, comment: '#'}),
-    annotations: Util.getInputList('annotations', {ignoreComma: true, comment: '#'}),
+    images: Util.getInputList('images', {ignoreComma: true, comment: '#', commentNoInfix: true}),
+    tags: Util.getInputList('tags', {ignoreComma: true, comment: '#', commentNoInfix: true}),
+    flavor: Util.getInputList('flavor', {ignoreComma: true, comment: '#', commentNoInfix: true}),
+    labels: Util.getInputList('labels', {ignoreComma: true, comment: '#', commentNoInfix: true}),
+    annotations: Util.getInputList('annotations', {ignoreComma: true, comment: '#', commentNoInfix: true}),
     sepTags: core.getInput('sep-tags', {trimWhitespace: false}) || `\n`,
     sepLabels: core.getInput('sep-labels', {trimWhitespace: false}) || `\n`,
     sepAnnotations: core.getInput('sep-annotations', {trimWhitespace: false}) || `\n`,

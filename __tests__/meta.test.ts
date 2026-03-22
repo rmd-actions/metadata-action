@@ -1,47 +1,65 @@
-import {beforeEach, describe, expect, jest, test} from '@jest/globals';
+import {beforeEach, describe, expect, test, vi} from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as dotenv from 'dotenv';
 
-import {Context} from '@actions/github/lib/context';
-import {GitHub} from '@docker/actions-toolkit/lib/github';
-import {Toolkit} from '@docker/actions-toolkit/lib/toolkit';
-import {GitHubRepo} from '@docker/actions-toolkit/lib/types/github';
+import {GitHub} from '@docker/actions-toolkit/lib/github/github.js';
+import {Toolkit} from '@docker/actions-toolkit/lib/toolkit.js';
+import {GitHubRepo} from '@docker/actions-toolkit/lib/types/github/github.js';
 
-import {ContextSource, getContext, getInputs, Inputs} from '../src/context';
-import {Meta, Version} from '../src/meta';
+import {ContextSource, getContext, getInputs, Inputs} from '../src/context.js';
+import type {Context as MetadataContext} from '../src/context.js';
+import {Meta, Version} from '../src/meta.js';
 
-import repoFixture from './fixtures/repo.json';
+import repoFixture from './fixtures/repo.json' with {type: 'json'};
 
-jest.spyOn(GitHub.prototype, 'repoData').mockImplementation((): Promise<GitHubRepo> => {
+vi.spyOn(GitHub.prototype, 'repoData').mockImplementation((): Promise<GitHubRepo> => {
   return <Promise<GitHubRepo>>(repoFixture as unknown);
 });
 
-jest.spyOn(global.Date.prototype, 'toISOString').mockImplementation(() => {
+vi.spyOn(global.Date.prototype, 'toISOString').mockImplementation(() => {
   return '2020-01-10T00:30:00.000Z';
 });
 
-jest.mock('moment-timezone', () => {
-  return () => (jest.requireActual('moment-timezone') as typeof import('moment-timezone'))('2020-01-10T00:30:00.000Z');
+vi.mock('moment-timezone', async () => {
+  const actual = await vi.importActual<unknown>('moment-timezone');
+  const actualModule = actual as {default?: (input?: string | Date) => unknown};
+  const momentTimezone = (typeof actual === 'function' ? actual : actualModule.default) as (input?: string | Date) => unknown;
+  return {
+    __esModule: true,
+    default: () => momentTimezone('2020-01-10T00:30:00.000Z')
+  };
 });
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   Object.keys(process.env).forEach(function (key) {
     if (key !== 'GITHUB_TOKEN' && key.startsWith('GITHUB_')) {
       delete process.env[key];
     }
   });
-
-  jest.spyOn(GitHub, 'context', 'get').mockImplementation((): Context => {
-    //@ts-expect-error partial info
+  vi.spyOn(GitHub, 'context', 'get').mockImplementation((): MetadataContext => {
+    const repository = process.env.GITHUB_REPOSITORY || 'docker/repo';
+    const [owner, repo] = repository.includes('/') ? repository.split('/', 2) : ['docker', 'repo'];
+    const eventPath = process.env.GITHUB_EVENT_PATH;
+    const payload = eventPath && fs.existsSync(eventPath) ? JSON.parse(fs.readFileSync(eventPath, 'utf8')) : {};
     return {
-      ...new Context(),
-      repo: {
-        owner: 'docker',
-        repo: 'repo'
-      }
-    };
+      payload,
+      eventName: process.env.GITHUB_EVENT_NAME || '',
+      sha: process.env.GITHUB_SHA || '',
+      ref: process.env.GITHUB_REF || '',
+      workflow: process.env.GITHUB_WORKFLOW || '',
+      action: process.env.GITHUB_ACTION || '',
+      actor: process.env.GITHUB_ACTOR || '',
+      job: process.env.GITHUB_JOB || '',
+      runAttempt: +(process.env.GITHUB_RUN_ATTEMPT || 1),
+      runNumber: +(process.env.GITHUB_RUN_NUMBER || 0),
+      runId: +(process.env.GITHUB_RUN_ID || 0),
+      apiUrl: process.env.GITHUB_API_URL || 'https://api.github.com',
+      serverUrl: process.env.GITHUB_SERVER_URL || 'https://github.com',
+      graphqlUrl: process.env.GITHUB_GRAPHQL_URL || 'https://api.github.com/graphql',
+      repo: {owner, repo}
+    } as MetadataContext;
   });
 });
 
@@ -53,7 +71,7 @@ describe('isRawStatement', () => {
     ['{{ raw }}', true],
     ['{{ raw}}', true],
     ['{{raw}}', true],
-  ])('given %p pattern', async (pattern: string, expected: boolean) => {
+  ])('given %o pattern', async (pattern: string, expected: boolean) => {
     expect(Meta.isRawStatement(pattern)).toEqual(expected);
   });
 });
@@ -79,7 +97,7 @@ const tagsLabelsTest = async (name: string, envFile: string, inputs: Inputs, exV
 
 describe('null', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
+  // eslint-disable-next-line vitest/expect-expect
   test.each([
     [
       'null01',
@@ -133,12 +151,12 @@ describe('null', () => {
       ],
       undefined
     ],
-  ])('given %p with %p event', tagsLabelsTest);
+  ])('given %o with %o event', tagsLabelsTest);
 });
 
 describe('push', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
+  // eslint-disable-next-line vitest/expect-expect
   test.each([
     [
       'push01',
@@ -856,12 +874,12 @@ describe('push', () => {
       ],
       undefined
     ]
-  ])('given %p with %p event', tagsLabelsTest);
+  ])('given %o with %o event', tagsLabelsTest);
 });
 
 describe('tag', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
+  // eslint-disable-next-line vitest/expect-expect
   test.each([
     [
       'tag01',
@@ -2035,12 +2053,12 @@ describe('tag', () => {
       ],
       undefined
     ]
-  ])('given %p with %p event', tagsLabelsTest);
+  ])('given %o with %o event', tagsLabelsTest);
 });
 
 describe('latest', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
+  // eslint-disable-next-line vitest/expect-expect
   test.each([
     [
       'latest01',
@@ -2377,12 +2395,12 @@ describe('latest', () => {
       ],
       undefined
     ]
-  ])('given %p with %p event', tagsLabelsTest);
+  ])('given %o with %o event', tagsLabelsTest);
 });
 
 describe('pr', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
+  // eslint-disable-next-line vitest/expect-expect
   test.each([
     [
       'pr01',
@@ -2765,7 +2783,7 @@ describe('pr', () => {
       ],
       undefined
     ],
-  ])('given %p with %p event', tagsLabelsTest);
+  ])('given %o with %o event', tagsLabelsTest);
 });
 
 describe('pr-head-sha', () => {
@@ -3140,7 +3158,7 @@ describe('pr-head-sha', () => {
         "org.opencontainers.image.version=src-2020-01-10T00-30-00Z",
       ]
     ],
-  ])('given %p with %p event', async (name: string, envFile: string, inputs: Inputs, exVersion: Version, exTags: Array<string>, exLabelsAnnotations: Array<string>) => {
+  ])('given %o with %o event', async (name: string, envFile: string, inputs: Inputs, exVersion: Version, exTags: Array<string>, exLabelsAnnotations: Array<string>) => {
     process.env = dotenv.parse(fs.readFileSync(path.join(__dirname, 'fixtures', envFile)));
     process.env.DOCKER_METADATA_PR_HEAD_SHA = 'true';
 
@@ -3164,7 +3182,7 @@ describe('pr-head-sha', () => {
 
 describe('schedule', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
+  // eslint-disable-next-line vitest/expect-expect
   test.each([
     [
       'schedule01',
@@ -3423,12 +3441,12 @@ describe('schedule', () => {
       ],
       undefined
     ],
-  ])('given %p with %p event', tagsLabelsTest);
+  ])('given %o with %o event', tagsLabelsTest);
 });
 
 describe('release', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
+  // eslint-disable-next-line vitest/expect-expect
   test.each([
     [
       'release01',
@@ -3525,12 +3543,12 @@ describe('release', () => {
       ],
       undefined
     ]
-  ])('given %s with %p event', tagsLabelsTest);
+  ])('given %o with %o event', tagsLabelsTest);
 });
 
 describe('raw', () => {
   // prettier-ignore
-  // eslint-disable-next-line jest/expect-expect
+  // eslint-disable-next-line vitest/expect-expect
   test.each([
     [
       'raw01',
@@ -3905,7 +3923,7 @@ describe('raw', () => {
       ],
       undefined
     ],
-  ])('given %p wth %p event', tagsLabelsTest);
+  ])('given %o with %o event', tagsLabelsTest);
 });
 
 describe('json', () => {
@@ -4259,7 +4277,7 @@ describe('json', () => {
         ]
       }
     ]
-  ])('given %p with %p event', async (name: string, envFile: string, inputs: Inputs, exJSON: unknown) => {
+  ])('given %o with %o event', async (name: string, envFile: string, inputs: Inputs, exJSON: unknown) => {
     process.env = dotenv.parse(fs.readFileSync(path.join(__dirname, 'fixtures', envFile)));
 
     const toolkit = new Toolkit();
@@ -4774,7 +4792,7 @@ describe('bakeFile', () => {
         }
       }
     ]
-  ])('given %p with %p event', async (name: string, envFile: string, inputs: Inputs, exBakeTags: unknown, exBakeLabels: unknown, exBakeAnnotations: unknown) => {
+  ])('given %o with %o event', async (name: string, envFile: string, inputs: Inputs, exBakeTags: unknown, exBakeLabels: unknown, exBakeAnnotations: unknown) => {
     process.env = dotenv.parse(fs.readFileSync(path.join(__dirname, 'fixtures', envFile)));
 
     const toolkit = new Toolkit();
@@ -4837,7 +4855,7 @@ describe('bakeFileTagsLabels', () => {
         }
       }
     ]
-  ])('given %p with %p event', async (name: string, envFile: string, inputs: Inputs, exBakeDefinition: unknown) => {
+  ])('given %o with %o event', async (name: string, envFile: string, inputs: Inputs, exBakeDefinition: unknown) => {
     process.env = dotenv.parse(fs.readFileSync(path.join(__dirname, 'fixtures', envFile)));
 
     const toolkit = new Toolkit();
@@ -4882,7 +4900,7 @@ describe('sepTags', () => {
       } as Inputs,
       "user/app:dev,user/app:my,user/app:custom,user/app:tags"
     ]
-  ])('given %p with %p event', async (name: string, envFile: string, inputs: Inputs, expTags: string) => {
+  ])('given %o with %o event', async (name: string, envFile: string, inputs: Inputs, expTags: string) => {
     process.env = dotenv.parse(fs.readFileSync(path.join(__dirname, 'fixtures', envFile)));
 
     const toolkit = new Toolkit();
