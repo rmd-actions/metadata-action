@@ -345,7 +345,7 @@ jobs:
             type=sha
       -
         name: Build and push to local registry
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./test
           file: ./test/Dockerfile
@@ -393,7 +393,7 @@ jobs:
             type=sha
       -
         name: Build
-        uses: docker/bake-action@v6
+        uses: docker/bake-action@v7
         with:
           files: |
             ./test/docker-bake.hcl
@@ -462,7 +462,7 @@ jobs:
             maintainer=Foo
       -
         name: Build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./test
           file: ./test/output.Dockerfile
@@ -531,7 +531,7 @@ jobs:
           DOCKER_METADATA_ANNOTATIONS_LEVELS: manifest,index
       -
         name: Build
-        uses: docker/bake-action@v6
+        uses: docker/bake-action@v7
         with:
           files: |
             ./test/docker-bake.hcl
@@ -583,7 +583,7 @@ jobs:
         uses: ./
       -
         name: Build
-        uses: docker/bake-action@v6
+        uses: docker/bake-action@v7
         with:
           source: .
           files: |
