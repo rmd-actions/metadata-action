@@ -23,17 +23,17 @@
   ],
   "author": "Docker Inc.",
   "license": "Apache-2.0",
-  "packageManager": "yarn@4.9.2",
+  "packageManager": "yarn@4.15.0",
   "dependencies": {
-    "@actions/core": "^3.0.0",
-    "@actions/github": "^9.0.0",
-    "@docker/actions-toolkit": "^0.90.0",
+    "@actions/core": "^3.0.1",
+    "@actions/github": "^9.1.1",
+    "@docker/actions-toolkit": "^0.91.0",
     "@renovate/pep440": "^1.0.0",
     "csv-parse": "^6.2.1",
     "handlebars": "^4.7.9",
     "moment": "^2.30.1",
-    "moment-timezone": "^0.6.1",
-    "semver": "^7.7.4"
+    "moment-timezone": "^0.6.2",
+    "semver": "^7.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.3",
